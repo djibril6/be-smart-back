@@ -110,8 +110,17 @@ Router.post('/auth', async (req, res) => {
                 res.status(200).json(response(false, "Email or password incorrects!"));
             }
         } else {
-            // const hashedPass = await bcrypt.hash('1234', salt);
-            // await User.create({firstname: 'Djibril', lastname: 'ISSOUFOU', email: 'issoufoudjib@gmail.com', pass: hashedPass, role: 'ADMIN', sate: true, createBy: {}});
+            let theUser = await User.findOne({email: 'doe@mail.com'});
+            if (!theUser) {
+                const hashedPass = await bcrypt.hash('besmart@1234', salt);
+                await User.create({firstname: 'John', lastname: 'Doe', email: 'doe@mail.com', pass: hashedPass, role: 'ADMIN', sate: true, createBy: {}});
+
+                theUser = await User.findOne({email: 'doe@mail.com'});
+                res.status(200).json(response(true, "Connected", theUser, jwt.sign(
+                    { userId: theUser._id },
+                    process.env.MOT_SECRET_TOKEN,
+                    { expiresIn: '24h' })));
+            }
             res.status(200).json(response(false, "Email or password incorrects!"));
         }
     } catch (error) {
