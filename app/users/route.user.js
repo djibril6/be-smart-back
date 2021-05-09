@@ -49,6 +49,18 @@ Router.get("/get/one/:id", auth, async (req, res) => {
         res.status(200).json(response(false, "Error occurred", error));
     }
 });
+Router.get("/get/email/:email", auth, async (req, res) => {
+    try {
+        const result = await User.findOne({email: req.params.email});
+        if (result) {
+            res.status(200).json(response(true, "The User", result));
+        } else {
+            res.status(200).json(response(false, "Can't found this user", result));
+        }
+    } catch (error) {
+        res.status(200).json(response(false, "Error occurred", error));
+    }
+});
 
 // Add User
 Router.post("/add", auth, async (req, res) => {
@@ -73,7 +85,7 @@ Router.post("/add", auth, async (req, res) => {
         res.status(201).json(response(true, "User created", UserAdded));
     } catch (error) {
         if (error.errors.email.kind === 'unique') {
-            res.status(200).json(response(false, "One user with this email already exist!", error));
+            res.status(200).json(response(false, "User with this email already exist!", error));
         } else {
             res.status(400).json(response(false, "An error occurred", error));
         }

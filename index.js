@@ -7,6 +7,7 @@ const { PORT } = require('./app/config');
 const auth = require("./app/middleware_auth");
 
 // ROutes import 
+const routeProject = require('./app/projects/route.project');
 const routeUser = require('./app/users/route.user');
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/user', routeUser);
+app.use('/project', auth, routeProject);
 
 // connection to the DB
 mongoose.connect(process.env.MONGODB_URI, {useNewUrlParser: true, useUnifiedTopology: true})
