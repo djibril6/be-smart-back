@@ -109,7 +109,6 @@ Router.patch("/update/tasks/:id",  async (req, res) => {
         );
         res.status(201).json(response(true, "Updated", result));
     } catch (error) {
-        console.log(error)
         res.status(400).json(response(false, "An error occurred", error));
     }
 });
@@ -132,6 +131,19 @@ Router.delete("/:id",  async (req, res) => {
     try {
         const result = await Project.deleteOne({_id: req.params.id});
         res.status(200).json(response(true, "Deleted", result));
+    } catch (error) {
+        res.status(400).json(response(false, "An error occurred", error));
+    }
+});
+Router.patch("/delete/user/:id", async (req, res) => {
+
+    try {
+        const result = await Project.updateOne(
+            { _id: req.params.id }, 
+            { $pull: { users: req.body } }
+        );
+        console.log(req.body)
+        res.status(201).json(response(true, "Deleted", result));
     } catch (error) {
         res.status(400).json(response(false, "An error occurred", error));
     }
