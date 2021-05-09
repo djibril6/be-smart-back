@@ -72,7 +72,7 @@ Router.post("/add", auth, async (req, res) => {
         const UserAdded = await User.create(data);
         res.status(201).json(response(true, "User created", UserAdded));
     } catch (error) {
-        if (error.errors.matUser.kind === 'unique') {
+        if (error.errors.email.kind === 'unique') {
             res.status(200).json(response(false, "One user with this email already exist!", error));
         } else {
             res.status(400).json(response(false, "An error occurred", error));
