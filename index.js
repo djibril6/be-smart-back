@@ -6,6 +6,8 @@ require('dotenv/config');
 const { PORT } = require('./app/config');
 const auth = require("./app/middleware_auth");
 
+// ROutes import 
+const routeUser = require('./app/users/route.user');
 
 const app = express();
 
@@ -14,6 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Routes
+app.use('/user', routeUser);
 
 // connection to the DB
 mongoose.connect(process.env.MONGODB_URI, {useNewUrlParser: true, useUnifiedTopology: true})
