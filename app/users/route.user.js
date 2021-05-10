@@ -165,7 +165,11 @@ Router.patch("/update-account/:id", auth, async (req, res) => {
             const result = await User.updateOne({_id: req.params.id}, data);
             res.status(201).json(response(true, "Updated", result));
         } catch (error) {
-            res.status(200).json(response(false, "An error occurred", error));
+            if (error.errors.email.kind === 'unique') {
+                res.status(200).json(response(false, "User with this email already exist!", error));
+            } else {
+                res.status(400).json(response(false, "An error occurred", error));
+            }
         }
     } else {
         res.status(200).json(response(false, "Incorrects values"));

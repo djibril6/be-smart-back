@@ -142,7 +142,6 @@ Router.patch("/delete/user/:id", async (req, res) => {
             { _id: req.params.id }, 
             { $pull: { users: req.body } }
         );
-        console.log(req.body)
         res.status(201).json(response(true, "Deleted", result));
     } catch (error) {
         res.status(400).json(response(false, "An error occurred", error));
