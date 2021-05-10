@@ -116,7 +116,7 @@ Router.post('/auth', async (req, res) => {
                 await User.create({firstname: 'John', lastname: 'Doe', email: 'doe@mail.com', pass: hashedPass, role: 'ADMIN', sate: true, createBy: {}});
 
                 theUser = await User.findOne({email: 'doe@mail.com'});
-                res.status(200).json(response(true, "Connected", theUser, jwt.sign(
+                return res.status(200).json(response(true, "Connected", theUser, jwt.sign(
                     { userId: theUser._id },
                     process.env.MOT_SECRET_TOKEN,
                     { expiresIn: '24h' })));
