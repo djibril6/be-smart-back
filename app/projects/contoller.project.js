@@ -48,6 +48,7 @@ const updateAddProjectController = data => {
             endDate: Joi.date(),
             comment: Joi.string(),
             cards: Joi.string().required(),
+            state: Joi.string()
         },
     });
     return schema.validate(data);

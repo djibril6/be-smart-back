@@ -99,33 +99,33 @@ Router.post('/auth', async (req, res) => {
 
     try {
         let theUser = await User.findOne({email: req.body.email});
+
         if (theUser && theUser.state) {
             const test = await bcrypt.compare(req.body.pass, theUser.pass);
             if (test) {
-                res.status(200).json(response(true, "Connected", theUser, jwt.sign(
-                    { userId: theUser._id },
-                    process.env.MOT_SECRET_TOKEN,
-                    { expiresIn: '24h' })));
-            } else {
-                res.status(200).json(response(false, "Email or password incorrects!"));
-            }
-        } else {
-            let theUser = await User.findOne({email: 'doe@mail.com'});
-            if (!theUser) {
-                const hashedPass = await bcrypt.hash('besmart@1234', salt);
-                await User.create({firstname: 'John', lastname: 'Doe', email: 'doe@mail.com', pass: hashedPass, role: 'ADMIN', sate: true, createBy: {}});
-
-                theUser = await User.findOne({email: 'doe@mail.com'});
                 return res.status(200).json(response(true, "Connected", theUser, jwt.sign(
                     { userId: theUser._id },
                     process.env.MOT_SECRET_TOKEN,
                     { expiresIn: '24h' })));
+            } else {
+                return res.status(200).json(response(false, "Email or password incorrects!"));
             }
-            res.status(200).json(response(false, "Email or password incorrects!"));
+        } else {
+            // let theUser = await User.findOne({email: 'doe@mail.com'});
+            // if (!theUser) {
+            //     const hashedPass = await bcrypt.hash('besmart@1234', salt);
+            //     await User.create({firstname: 'John', lastname: 'Doe', email: 'doe@mail.com', pass: hashedPass, role: 'ADMIN', sate: true, createBy: {}});
+
+            //     theUser = await User.findOne({email: 'doe@mail.com'});
+            //     return res.status(200).json(response(true, "Connected", theUser, jwt.sign(
+            //         { userId: theUser._id },
+            //         process.env.MOT_SECRET_TOKEN,
+            //         { expiresIn: '24h' })));
+            // }
+            return res.status(200).json(response(false, "Email or password incorrects!"));
         }
     } catch (error) {
-        console.log(error)
-        res.status(200).json(response(false, "An error occurred", error));
+        return res.status(200).json(response(false, "An error occurred", error));
     }
 });
 
@@ -144,7 +144,7 @@ Router.patch("/update/:id", auth, async (req, res) => {
 
 // Update my account
 Router.patch("/update-account/:id", auth, async (req, res) => {
-    const result = updateCompteController(req.body);
+    const result = selfUpdateController(req.body);
     if (result.error) return res.status(400).json(response(false, 'There are Errors in your request', result.error.details));
 
     const decodedToken = jwt.verify(req.headers.authorization.split(' ')[1], 

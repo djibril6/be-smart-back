@@ -45,7 +45,8 @@ const ProjectSchema = mongoose.Schema({
             }],
             endDate: Date,
             comment: String,
-            cards: String
+            cards: String,
+            state: String 
         }],
         require: false
     },

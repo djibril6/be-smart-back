@@ -20,18 +20,16 @@ Router.get("/get/all", async (req, res) => {
             res.status(200).json(response(false, "No Projects", result));
         }
     } catch (error) {
-        res.status(200).json(response(false, "Error occurred", error));
+        res.status(400).json(response(false, "Error occurred", error));
     }
 });
 
 // Find with criteria
 Router.get("/get/key/:key", async (req, res) => {
     try {
-        const result = await Patient.find({ $or: [
+        const result = await Project.find({ $or: [
             {name: { $regex: "^"+ req.params.key + "", $options: 'mi' }},
-            {name: { $regex: ""+ req.params.key + "$", $options: 'mi' }}, 
-            // {email: { $regex: "^"+ req.params.key + "", $options: 'mi' }},
-            // {email: { $regex: ""+ req.params.key + "$", $options: 'mi' }}, 
+            {name: { $regex: ""+ req.params.key + "$", $options: 'mi' }}
         ]}).limit(10);
         if (result) {
             res.status(201).json(response(true, "All Project", result));
@@ -39,7 +37,7 @@ Router.get("/get/key/:key", async (req, res) => {
             res.status(200).json(response(false, "No Projects", result));
         }
     } catch (error) {
-        res.status(200).json(response(false, "Error occurred", error));
+        res.status(400).json(response(false, "Error occurred", error));
     }
 });
 
@@ -104,7 +102,7 @@ Router.patch("/update/tasks/:id",  async (req, res) => {
 
     try {
         const result = await Project.updateOne(
-            { _id: req.params.id, tasks: req.body.old },
+            { _id: req.params.id, 'tasks._id': req.body.old._id },
             { $set: { "tasks.$" : req.body.new } }
         );
         res.status(201).json(response(true, "Updated", result));
