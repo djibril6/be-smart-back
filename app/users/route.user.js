@@ -85,7 +85,7 @@ Router.post("/add", auth, async (req, res) => {
         res.status(201).json(response(true, "User created", UserAdded));
     } catch (error) {
         if (error.errors.email.kind === 'unique') {
-            res.status(200).json(response(false, "User with this email already exist!", error));
+            res.status(409).json(response(false, "User with this email already exist!", error));
         } else {
             res.status(400).json(response(false, "An error occurred", error));
         }
@@ -99,18 +99,30 @@ Router.post('/auth', async (req, res) => {
 
     try {
         let theUser = await User.findOne({email: req.body.email});
-
+        
         if (theUser && theUser.state) {
             const test = await bcrypt.compare(req.body.pass, theUser.pass);
             if (test) {
-                return res.status(200).json(response(true, "Connected", theUser, jwt.sign(
+                User.updateOne({_id: theUser._id}, {loginError: 0});
+                res.status(200).json(response(true, "Connected", theUser, jwt.sign(
                     { userId: theUser._id },
                     process.env.MOT_SECRET_TOKEN,
                     { expiresIn: '24h' })));
             } else {
-                return res.status(200).json(response(false, "Email or password incorrects!"));
+                if (theUser.loginError >= 3) {
+                    await User.updateOne({_id: theUser._id}, {state: false});
+                } else {
+                    await User.updateOne(
+                        {_id: theUser._id},
+                        { $inc: {loginError: 1} }
+                        )
+                }
+                res.status(403).json(response(false, "Email or password incorrects!"));
             }
         } else {
+            if (theUser) {
+                return res.status(403).json(response(false, "Your count has been closed! Please contact the administrator"));
+            }
             // let theUser = await User.findOne({email: 'doe@mail.com'});
             // if (!theUser) {
             //     const hashedPass = await bcrypt.hash('besmart@1234', salt);
@@ -122,10 +134,10 @@ Router.post('/auth', async (req, res) => {
             //         process.env.MOT_SECRET_TOKEN,
             //         { expiresIn: '24h' })));
             // }
-            return res.status(200).json(response(false, "Email or password incorrects!"));
+            return res.status(403).json(response(false, "Email or password incorrects!"));
         }
     } catch (error) {
-        return res.status(200).json(response(false, "An error occurred", error));
+        res.status(400).json(response(false, "An error occurred", error));
     }
 });
 
@@ -135,7 +147,11 @@ Router.patch("/update/:id", auth, async (req, res) => {
     if (result.error) return res.status(400).json(response(false, 'There are Errors in your request', result.error.details));
 
     try {
-        const result = await User.updateOne({_id: req.params.id}, req.body);
+        const data = req.body;
+        if (req.body.state) {
+            data.loginError = 0;
+        }
+        const result = await User.updateOne({_id: req.params.id}, data);
         res.status(201).json(response(true, "Updated", result));
     } catch (error) {
         res.status(400).json(response(false, "An error occurred", error));
@@ -153,23 +169,26 @@ Router.patch("/update-account/:id", auth, async (req, res) => {
 
     if (userID == req.params.id) {
         try {
-            if (!req.body.newPass || req.body.newPass === '') {
+            const data = req.body;
+            if (!req.body.pass || req.body.pass === '') {
 
             } else {
                 // Hacher mot de passe 
                 // const salt = await bcrypt.genSalt(10);
-                const hashedPass = await bcrypt.hash(req.body.newPass, salt);
+                const hashedPass = await bcrypt.hash(req.body.pass, salt);
                 
                 data.pass = hashedPass;
             }
             const result = await User.updateOne({_id: req.params.id}, data);
             res.status(201).json(response(true, "Updated", result));
         } catch (error) {
-            if (error.errors.email.kind === 'unique') {
-                res.status(200).json(response(false, "User with this email already exist!", error));
-            } else {
-                res.status(400).json(response(false, "An error occurred", error));
-            }
+            console.log(error)
+            // if (error.errors.email.kind === 'unique') {
+            //     res.status(200).json(response(false, "User with this email already exist!", error));
+            // } else {
+            //     res.status(400).json(response(false, "An error occurred", error));
+            // }
+            res.status(400).json(response(false, "An error occurred", error));
         }
     } else {
         res.status(200).json(response(false, "Incorrects values"));

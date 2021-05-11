@@ -28,6 +28,11 @@ const UserSchema = mongoose.Schema({
         require: true,
         default: true
     },
+    loginError: {
+        type: Number,
+        require: false,
+        default: 0
+    },
     createBy: {
         type: {id: String, name: String},
         require: true
