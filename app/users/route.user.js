@@ -18,9 +18,9 @@ const {
     selfUpdateController,
 } = require('./contoller.user');
 const response = require('../res_format');
-const { DEFAULT_PASSWD } = require('../config');
 
 const { getUser } = require("../global_function");
+const sendMail = require('../send_mail');
 
 // All users
 Router.get("/get/all", auth, async (req, res) => {
@@ -68,9 +68,13 @@ Router.post("/add", auth, async (req, res) => {
     if (result.error) return res.status(400).json(response(false, 'There are Errors in your request', result.error.details));
 
     // Hash the password
-    const salt = await bcrypt.genSalt(10);
+    const generator = require('generate-password');
+    const DEFAULT_PASSWD = generator.generate({
+        length: 10,
+        numbers: true
+    });
     const hashedPass = await bcrypt.hash(DEFAULT_PASSWD, salt);
-    const data = req.body;
+    const data = req.body; 
     data.pass = hashedPass;
 
     // Store admin user
@@ -82,6 +86,7 @@ Router.post("/add", auth, async (req, res) => {
 
     try {
         const UserAdded = await User.create(data);
+        sendMail(data.email, 'New User on BeSmart App ✔', 'Your generated password is: ' + DEFAULT_PASSWD)
         res.status(201).json(response(true, "User created", UserAdded));
     } catch (error) {
         if (error.errors.email.kind === 'unique') {

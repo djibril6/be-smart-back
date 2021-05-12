@@ -6,7 +6,8 @@ const addProjectController = data => {
         type: Joi.string().required(),
         users: Joi.array().required(),
         state: Joi.string().required(),
-        color: Joi.string()
+        color: Joi.string(),
+        link: Joi.string()
     });
     return schema.validate(data);
 };
@@ -20,6 +21,7 @@ const updateProjectController = data => {
         color: Joi.string(),
         cards: Joi.array(),
         tasks: Joi.array(),
+        link: Joi.string()
     });
     return schema.validate(data);
 };

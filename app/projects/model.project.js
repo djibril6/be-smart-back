@@ -28,6 +28,10 @@ const ProjectSchema = mongoose.Schema({
         type: String,
         require: true,
     },
+    link: {
+        type: String,
+        require: false,
+    },
     cards: {
         type: [{
             name: String,
